@@ -192,7 +192,7 @@ public class NFAtoDFA {
 			//PRINTING INPUT
 			System.out.println(input);
 
-			constructAndSolveDFA(DFAStates, DFAGoals, alphabet, DFAInitState, DFATransitions, l5);
+			constructAndSolveDFA(DFAStates, DFAGoals, alphabet, DFAInitState, DFATransitions, input);
 		}
 		
 		br.close();
@@ -306,7 +306,7 @@ public class NFAtoDFA {
 
 	
 	//represents a transition
-	class Transition {
+	public static class Transition {
 		String init;
 		String finish;
 		ArrayList<String> initList;
@@ -391,7 +391,7 @@ public class NFAtoDFA {
 		ArrayList<String> result = new ArrayList<>();
 		result.add(state);
 		for(int i = 0; i < transitions.length; i++) {
-			if(transitions[i].alphabet.equals("$") && transitionList[i].init.equals(state) && !result.contains(transitions[i].finish)) {
+			if(transitions[i].alphabet.equals("$") && transitions[i].init.equals(state) && !result.contains(transitions[i].finish)) {
 				result.add(transitions[i].finish);
 			}
 		}
@@ -476,6 +476,3 @@ public class NFAtoDFA {
 		return false;
 	}
  }
-
-
-
