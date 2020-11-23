@@ -3,6 +3,7 @@ package NFAtoDFA;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -127,9 +128,20 @@ public class NFAtoDFA {
 			System.out.println("Transitions: " + DFATransitions);
 			constructAndSolveDFA(DFAStates, DFAGoals, alphabet, DFAInitState, DFATransitions); //input);
 			System.out.println(" ");
+
+			//prints to output file
+			PrintWriter out = new PrintWriter("dfa.txt");
+			out.println("DFA States: " + DFAStates);
+			out.println("Epsilon (Alphabet): "+ alphabet);
+			out.println("Transitions: " + DFATransitions);
+			out.println("Starting State: " + DFAInitState);
+			out.println("Accepting State(s): " + DFAGoals);
+			out.close();
+			
 		}
-		
+			
 		br.close();
+		
 	}
 
 
@@ -203,17 +215,6 @@ public class NFAtoDFA {
 				nFATransitions.add(newTransitions.get(i));
 			}
 		}
-	}
-
-
-
-	private static boolean inArray(String s , String [] array){
-		for(int i = 0 ; i < array.length;i++){
-			if(array[i].equals(s)){
-				return true;
-			}
-		}
-		return false;
 	}
 
 	public static ArrayList<String> getEpsilonClosure(String state, Transition[] transitions){
@@ -290,16 +291,5 @@ public class NFAtoDFA {
 			dfaStates +=  "{" + states.get(i) + "}" ;
 		}
 		return dfaStates;
-	}
-
-	
-	private static boolean transitionExists(String state, String alphabet) {
-		for(int i = 0 ; i < transitionArrayList.size() ; i++){
-			if(transitionArrayList.get(i).init.equals(state) 
-			&& transitionArrayList.get(i).alphabet.equals(alphabet)) {
-				return true;
-			}
-		}
-		return false;
 	}
  }
