@@ -13,7 +13,6 @@ public class NFAtoDFA {
 	static String alphabet = null;
 	static String initState = null;
 	static String transition = null;
-	static String input = null;
 	static String mt = null;
 
 	static String start;
@@ -23,12 +22,11 @@ public class NFAtoDFA {
 	static String[] goalList;
 	static String[] alphabetList;
 	static String[] transitionList;
-	static String[] inputList;
 	static ArrayList<Transition> transitionArrayList = new ArrayList<>();
 
 
 	public static void main(String[] args) throws IOException {
-		FileReader fileReader = new FileReader("in1.in");
+		FileReader fileReader = new FileReader("nfa.txt");
 		BufferedReader br = new BufferedReader(fileReader);
 
 
@@ -41,103 +39,40 @@ public class NFAtoDFA {
 			alphabet = br.readLine();
 		    initState = br.readLine(); 
 			transition = br.readLine(); 
-			input = br.readLine();
 			mt = br.readLine(); // should be empty
 
 
 			stateList = line.split(",");
 			goalList = goal.split(",");
-
-
-			if(!checkGoal()){
-				continue;
-			}
+	
 
 			//parses alphabet
 			alphabetList = alphabet.split(",");
 			start = initState;
 
-			if(!inArray(start, stateList)){
-				System.err.println("Invalid start state: "+start);
-				continue;
-			}
-
 			//parses transitionList
-			transitionList = transition.split("#");
-			boolean error = false;
-			boolean error2 = false;
+			transitionList = transition.split(";");
 			for(String t : transitionList){
-				error2 = false;
 				String [] transitionArray = t.split(",");
 				if(transitionArray.length != 3){
-					error = true;
 					break;
 				}
-				
-				for ( int i = 0 ; i < 2 ; i++) {
-					if(!inArray(transitionArray[i], stateList)){
-						error2 = true;
-						System.err.println("Invalid transition. "+transitionArray[i]+" is not included in the given list of states.");
-						break;
-					}
-				}
-				
-				if(!inArray(transitionArray[2], alphabetList) && !transitionArray[2].equals("$")){
-					error2 = true;
-					System.err.println("Invalid transition. "+transitionArray[2]+" is not included in the alphabet.");
-				}
-				
-				if(error2){
-					break;
-				}
-				
 				Transition newTran = new Transition(transitionArray[0],transitionArray[1],transitionArray[2]);
 				transitionArrayList.add(newTran);
 			}
 			
-			if(error) {
-				System.err.println("Invalid transition. transitionList should be of size 3");
-				continue;
-			}
-			
-			if(error2) {
-				continue;
-			}
-
-
-
-			inputList = input.split("#");
-			boolean invalidInput = false;
-			String badInput = "";
-			for(String i : inputList){
-				String [] inputArray = i.split(",");
-				
-				for(String inputAlphabet : inputArray) {
-					if(!inArray(inputAlphabet, alphabetList)) {
-						invalidInput = true;
-						badInput = inputAlphabet;
-						break;
-					}
-				}
-			}
-			
-	
-				if(goal == "" || alphabet == "" || initState == "" || transition == "" 
-					|| input == "") {
-					System.err.println("One of the required lines is empty.");
-					continue;
-				}
-				
-				if(mt == "") {
-					System.err.println("No newline after input");
-					continue;
-				}
-
+			System.out.println(" ");
 			System.out.println("Here is the equivalent DFA: ");
+			System.out.println(" ");
+
 			ArrayList<String> initialStateDFA = getAllEpsilonClosure(start, transitionArrayList.toArray(new Transition[transitionArrayList.size()]));
+			
 			ArrayList<Transition> NFATransitions= new ArrayList<>();
+			
 			ArrayList<ArrayList<String>> allStates = new ArrayList<>();
+			
 			NFATransitions = makeTransitions(initialStateDFA, transitionArrayList.toArray(new Transition[transitionArrayList.size()]), alphabetList);
+			
 			for(int i = 0; i < NFATransitions.size() ; i ++) {
 				addToStates(allStates,NFATransitions.get(i).initList);
 				addToStates(allStates,NFATransitions.get(i).finishList);
@@ -153,7 +88,7 @@ public class NFAtoDFA {
 					DFAStates += ",";
 				}
 			}
-			System.out.println(DFAStates);
+			System.out.println("DFA States: " + DFAStates);
 
 			//PRINTING GOAL stateList
 			String DFAGoals = "";
@@ -166,14 +101,14 @@ public class NFAtoDFA {
 					}
 				}
 			}
-			System.out.println(DFAGoals);
+			System.out.println("Accepted States: " + DFAGoals);
 
 			//PRINTING ALPHABET
-			System.out.println(alphabet);
+			System.out.println("Epsilon (Alphabet): " + alphabet);
 
 			//PRINTING INITIAL STATE
 			String DFAInitState = printStates(initialStateDFA);
-			System.out.println(DFAInitState);
+			System.out.println("Initial State: " + DFAInitState);
 
 			//PRINTING ALL transitionList
 			String DFATransitions = "";
@@ -184,124 +119,42 @@ public class NFAtoDFA {
 				DFATransitions+=",";
 				DFATransitions+=NFATransitions.get(i).alphabet;
 				if(i < NFATransitions.size() - 1) {
-					DFATransitions+="#";
+					DFATransitions+="; ";
 				}
 			}
-			System.out.println(DFATransitions);
 
-			//PRINTING INPUT
-			System.out.println(input);
-
-			constructAndSolveDFA(DFAStates, DFAGoals, alphabet, DFAInitState, DFATransitions, input);
+			//print transitions 
+			System.out.println("Transitions: " + DFATransitions);
+			constructAndSolveDFA(DFAStates, DFAGoals, alphabet, DFAInitState, DFATransitions); //input);
+			System.out.println(" ");
 		}
 		
 		br.close();
 	}
 
+
+	/** constructandSolveDFA method to convert from NFA to DFA */
 	public static void constructAndSolveDFA(String DFAstates, String DFAacceptStates, 
-					String DFAAlphabet, String DFAinitState, String DFAtransitions, 
-					String DFAinput ) {
-		String line = DFAstates;
+					String DFAAlphabet, String DFAinitState, String DFAtransitions) { 
+						
+		String states = DFAstates;
 		String accepts = DFAacceptStates;
-		String l2 = DFAAlphabet;
-		String l3 = DFAinitState;
-		String l4 = DFAtransitions;
-		String l5 = DFAinput;
-		stateList = line.split(",");
+		String alphabet = DFAAlphabet;
+		String initialState = DFAinitState;
+		String transitions = DFAtransitions;
+		stateList = states.split(",");
 		goalList = accepts.split(",");
 
-		if(!checkGoal()){
-			return;
-		}
-
-		alphabetList = l2.split(",");
-		start = l3;
-
-		if(!inArray(start, stateList)){
-			System.err.println("Invalid start state "+start);
-			return;
-		}
 		
-		transitionList = l4.split("#");
-		boolean error = false;
-		boolean error2 = false;
+
+		alphabetList = alphabet.split(",");
+		start = initialState;
+		
+		transitionList = transitions.split("; ");
 		for(String transition : transitionList){
-			error2 = false;
 			String [] transitionArray = transition.split(",");
-			if(transitionArray.length != 3){
-				error = true;
-				break;
-			}
-			
-			for ( int i = 0 ; i <2 ;i++){
-				if(!inArray(transitionArray[i], stateList)){
-					error2 = true;
-					System.err.println("Invalid transition. "+transitionArray[i]+" is not included in the stateList.");
-					break;
-				}
-			}
-			
-			if(!inArray(transitionArray[2], alphabetList) &&!transitionArray[2].equals("$")){
-				error2 = true;
-				System.err.println("Invalid transition. "+transitionArray[2]+" is not included in the alphabet.");
-			}
-			
-			if(error2){
-				break;
-			}
 			transitionArrayList.add(new Transition(transitionArray[0],transitionArray[1],transitionArray[2]));
 		}
-		if(error){
-			System.err.println("Invalid transition. transitionList should be of size 3");
-			return;
-		}
-		if(error2){
-			return;
-		}
-		inputList = l5.split("#");
-		boolean error3 = false;
-		String badInput = "";
-		for(String input : inputList){
-			String [] inputArray = input.split(",");
-			for(String inputAlphabet : inputArray){
-				if(!inArray(inputAlphabet, alphabetList)){
-					error3 = true;
-					badInput = inputAlphabet;
-					break;
-				}
-			}
-		}
-		
-		if(error3){
-			System.err.println("Invalid input string at "+badInput);
-			return;
-		}
-		
-		boolean error4 = false;
-		
-		for(String state : stateList){
-			for(String alphabet : alphabetList){
-				if(!transitionExists(state,alphabet)){
-					error4 = true;
-					System.err.println("Missing transition for state " +state+" on input "+ alphabet );
-					break;
-				}
-			}
-		}
-		
-		if(error4){
-			return;
-		}
-		System.out.println("DFA Constructed");
-		for(String input : inputList){
-			String result = processInput(input);
-			if(inArray(result, goalList)){
-				System.out.println("Accepted");
-			} else {
-				System.out.println("Rejected");
-			}
-		}
-		System.out.println("");
 	}
 
 	
@@ -351,32 +204,8 @@ public class NFAtoDFA {
 			}
 		}
 	}
-	private static String processInput(String input) {
-		String currentState = start;
-		String [] inputArray = input.split(",");
-		for(int i = 0 ; i< inputArray.length ;i++){
-			for(int j = 0 ; j < transitionArrayList.size() ; j++){
-				if(transitionArrayList.get(j).init.equals(currentState) && transitionArrayList.get(j).alphabet.equals(inputArray[i])){
-					currentState = transitionArrayList.get(j).finish;
-					break;
-				}
-			}
-		}
-		return currentState;
-	}
 
-	private static boolean checkGoal() {
-		for(String goal : goalList){
-			if(goal.equals("")){
-				continue;
-			}
-			if(!inArray(goal,stateList)){
-				System.err.println("Invalid accept state "+goal);
-				return false;
-			}
-		}
-		return true;
-	}
+
 
 	private static boolean inArray(String s , String [] array){
 		for(int i = 0 ; i < array.length;i++){
@@ -447,22 +276,20 @@ public class NFAtoDFA {
 		for(int i = 0 ; i< alphabetList.length ; i++) {
 			ArrayList<String> finishStates = getStatesForGivenInput(stateOfStates, transitions, alphabetList[i]);
 			if(finishStates.size() == 0) {
-				finishStates.add("Dead");
+				finishStates.add("qZero");
 			}
 			result.add(new Transition(stateOfStates, finishStates, alphabetList[i]));
 		}
 		return result;
 	}
 	
+	//prints the new states of the DFA
 	public static String printStates(ArrayList<String>states) {
-		String out = "";
+		String dfaStates = "";
 		for(int i = 0 ; i < states.size();i++) {
-			out +=  states.get(i);
-			if(i < stateList.length - 1) {
-				out += "*";
-			}
+			dfaStates +=  "{" + states.get(i) + "}" ;
 		}
-		return out;
+		return dfaStates;
 	}
 
 	
