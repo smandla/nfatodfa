@@ -1,3 +1,11 @@
+/**
+ * NFAtoDFA.java
+ * Takes a NFA from an input file and outputs the equivalent DFA to a file. 
+ * @author Kavya Mandla
+ * @author Hera Malik
+ * @version November 2020
+ */
+
 package NFAtoDFA;
 
 import java.io.BufferedReader;
@@ -50,7 +58,7 @@ public class NFAtoDFA {
 			for(String t : transitionList){
 				String [] transitionArray = t.split(",");
 				
-				if(transitionArray.length != 3){
+				if(transitionArray.length != 3) {
 					break;
 				}
 				
@@ -160,7 +168,7 @@ public class NFAtoDFA {
 	}
 
 	/**
-	 * Represents a single transition of the DFA
+	 * Represents a single transition
 	 */
 	public static class Transition {
 		String init;
@@ -182,7 +190,7 @@ public class NFAtoDFA {
 			this.alphabet = alphabet;
 		}
 	
-		//constructor with lists
+		//constructor with lists (for the purpose of creating new states)
 		public Transition(ArrayList<String> init, ArrayList<String> finish, String alphabet){
 			this.initList = init;
 			this.finishList = finish;
@@ -191,7 +199,12 @@ public class NFAtoDFA {
 	}
 	
 	
-	public static void addNewTransitions(ArrayList<Transition> nfaTransitions ,ArrayList<Transition> newTransitions) {
+	/**
+	 * Adds transitions
+	 * @param nfaTransitions-- the transitions from the NFA
+	 * @param newTransitions-- the new transitions
+	 */
+	public static void addNewTransitions(ArrayList<Transition> nfaTransitions, ArrayList<Transition> newTransitions) {
 		for(int i = 0 ; i< newTransitions.size() ; i++) {
 			Collections.sort(newTransitions.get(i).initList);
 			Collections.sort(newTransitions.get(i).finishList);
@@ -211,6 +224,7 @@ public class NFAtoDFA {
 		}
 	}
 
+	
 	public static ArrayList<String> getEpsilonClosure(String state, Transition[] transitions){
 		ArrayList<String> result = new ArrayList<>();
 		result.add(state);
@@ -235,6 +249,11 @@ public class NFAtoDFA {
 		return result;
 	}
 
+	/**
+	 * Check that there is an accepting state
+	 * @param acceptState-- a list of accept states
+	 * @param stateOfStates-- a list of general states
+	 */
 	public static boolean hasAcceptState(String[] acceptStates, ArrayList<String> stateOfStates) {
 		for(int i = 0 ; i < stateOfStates.size(); i++) {
 			for( int j = 0 ; j < acceptStates.length; j++) {
@@ -246,6 +265,13 @@ public class NFAtoDFA {
 		return false;
 	}
 
+	
+	/**
+	 * Generates new states if the conditions are met
+	 * @param stateOfStates-- a list of states
+	 * @param transitions-- a list of transitions 
+	 * @param alphabet-- an alphabet
+	 */
 	public static ArrayList<String> getStatesForGivenInput(ArrayList<String> stateOfStates, Transition[]transitions, String alphabet){
 		ArrayList<String> result = new ArrayList<>();
 		for(int i = 0 ; i < stateOfStates.size(); i++) {
@@ -258,6 +284,12 @@ public class NFAtoDFA {
 		}
 		return result;
 	}
+
+	/**
+	 * Adds a given ArrayList to a running list of results if not already included
+	 * @param result-- the running list of results
+	 * @param newArray-- the list being added
+	 */
 	public static void addIfNotContains(ArrayList<String> result, ArrayList<String> newArray) {
 		for(int i = 0; i < newArray.size(); i++) {
 			if(!result.contains(newArray.get(i))) {
@@ -267,7 +299,7 @@ public class NFAtoDFA {
 	}
 
 	/**
-	 * 
+	 * Creates new transitions based on the input
 	 * @param stateOfStates
 	 * @param transitions
 	 * @param alphabets
